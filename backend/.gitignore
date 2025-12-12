@@ -1,0 +1,31 @@
+# Node dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment files
+.env
+!.dev.env  # allow dev.env to be tracked
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDE/editor files
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+
+# OS / misc
+Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+
+# Only keep important config + src folder
+# (everything else excluded by default)
