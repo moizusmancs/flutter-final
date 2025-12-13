@@ -23,20 +23,28 @@ export const authMiddleware = async (
     next: NextFunction
 ) => {
     try {
-        // Get token from cookie
-        const token = req.cookies.token;
+        // Get token from cookie or Authorization header
+        let token = req.cookies.token;
+
+        // If no cookie, check Authorization header
+        if (!token) {
+            const authHeader = req.headers.authorization;
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                token = authHeader.substring(7); // Remove 'Bearer ' prefix
+            }
+        }
 
         if (!token) {
             return next(new CustomError("Authentication required", 401));
         }
 
-        // Verify token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: number };
+        // Verify token - the payload has 'id' not 'userId'
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: number };
 
         // Get user from database
         const users = await queryDb<User[]>(
             "SELECT id, email, fullname FROM users WHERE id = ?",
-            [decoded.userId]
+            [decoded.id]
         );
 
         if (users.length === 0) {

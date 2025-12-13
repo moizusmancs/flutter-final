@@ -36,8 +36,13 @@ export const handleGetCart = AsyncCall(async (req, res, next) => {
         ORDER BY c.id DESC
     `, [userId]);
 
-    // Calculate cart total
-    const cartTotal = cartItems.reduce((sum, item) => sum + (item.item_total || 0), 0);
+    // Calculate cart total - ensure we convert strings to numbers
+    const cartTotal = cartItems.reduce((sum, item) => {
+        const itemTotal = typeof item.item_total === 'string'
+            ? parseFloat(item.item_total)
+            : (item.item_total || 0);
+        return sum + itemTotal;
+    }, 0);
 
     res.status(200).json({
         success: true,

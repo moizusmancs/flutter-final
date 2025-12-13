@@ -17,9 +17,16 @@ export const zodValidate =
 
       const parsedData = await schema.parseAsync(dataToValidate);
 
-      if (location === "body") req.body = parsedData as any;
-      if (location === "query") req.query = parsedData as any;
-      if (location === "params") req.params = parsedData as any;
+      if (location === "body") {
+        req.body = parsedData as any;
+      } else if (location === "query") {
+        // Cannot directly assign to req.query, so we assign to each property
+        Object.keys(parsedData as any).forEach(key => {
+          (req.query as any)[key] = (parsedData as any)[key];
+        });
+      } else if (location === "params") {
+        req.params = parsedData as any;
+      }
 
       next();
     } catch (err: any) {

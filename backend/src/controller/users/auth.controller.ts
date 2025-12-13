@@ -19,7 +19,7 @@ export const handleSignupUser = AsyncCall(async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const insertQuery = "INSERT INTO users (fullname, email, hashed_password, phone) VALUES (?, ?, ?, ?)";
+    const insertQuery = "INSERT INTO users (fullname, email, password_hash, phone) VALUES (?, ?, ?, ?)";
     const result = await queryDb<ResultSetHeader>(insertQuery, [fullname, email, hashedPassword, phone]);
 
     if (!result || !result.insertId) {
@@ -27,19 +27,17 @@ export const handleSignupUser = AsyncCall(async (req, res, next) => {
     }
     
     const token = generateToken(result.insertId);
-    
-    
 
-    res.status(201).cookie("token", token).json({
+    res.status(201).json({
         success: true,
         message: "User created successfully",
+        token: token,
         user: {
             id: result.insertId,
             fullname,
             email,
             phone
         }
-
     })
 
 });
@@ -54,7 +52,7 @@ export const handleLoginUser = AsyncCall(async (req, res, next) => {
         return next(new CustomError("invalid email address. no account exists.", 404));
     }
 
-    const isPasswordValid = await bcrypt.compare(password, userExists[0].hashed_password);
+    const isPasswordValid = await bcrypt.compare(password, userExists[0].password_hash);
 
     if(!isPasswordValid){
         return next(new CustomError("invalid password, please try again.", 400));
@@ -63,20 +61,18 @@ export const handleLoginUser = AsyncCall(async (req, res, next) => {
     const token = generateToken(userExists[0].id);
 
     const user = userExists[0];
-    delete user.hashed_password;
+    delete user.password_hash;
 
-
-    res.status(200).cookie("token", token).json({
+    res.status(200).json({
         success: true,
-        message: "User loggen-in successfully",
+        message: "User logged-in successfully",
+        token: token,
         user
     })
 });
 
 export const handleLogoutUser = AsyncCall(async (req, res, next) => {
-    // Clear the authentication cookie
-    res.clearCookie("token");
-
+    // Token-based auth: logout handled on client side by clearing local storage
     res.status(200).json({
         success: true,
         message: "User logged out successfully"

@@ -69,6 +69,20 @@ export const handleGetOneCategory = AsyncCall(async (req, res, next) => {
         [id]
     );
 
+    // Get product count for each subcategory
+    const subcategoriesWithCount = await Promise.all(
+        subcategories.map(async (subcat) => {
+            const countResult = await queryDb<{ count: number }[]>(
+                "SELECT COUNT(*) as count FROM products WHERE category_id = ?",
+                [subcat.id]
+            );
+            return {
+                ...subcat,
+                product_count: countResult[0].count
+            };
+        })
+    );
+
     // Get parent category if exists
     let parentCategory = null;
     if (category.parent_id) {
@@ -91,7 +105,7 @@ export const handleGetOneCategory = AsyncCall(async (req, res, next) => {
         message: "Category fetched successfully",
         category: {
             ...category,
-            subcategories,
+            subcategories: subcategoriesWithCount,
             parent: parentCategory,
             product_count: productCount
         }

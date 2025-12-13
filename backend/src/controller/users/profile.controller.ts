@@ -69,7 +69,7 @@ export const handleChangePassword = AsyncCall(async (req, res, next) => {
 
     // Get current user with password
     const users = await queryDb<User[]>(
-        "SELECT id, hashed_password FROM users WHERE id = ?",
+        "SELECT id, password_hash FROM users WHERE id = ?",
         [userId]
     );
 
@@ -78,7 +78,7 @@ export const handleChangePassword = AsyncCall(async (req, res, next) => {
     }
 
     // Verify current password
-    const isPasswordValid = await bcrypt.compare(currentPassword, users[0].hashed_password);
+    const isPasswordValid = await bcrypt.compare(currentPassword, users[0].password_hash);
 
     if (!isPasswordValid) {
         return next(new CustomError("Current password is incorrect", 400));
@@ -89,7 +89,7 @@ export const handleChangePassword = AsyncCall(async (req, res, next) => {
 
     // Update password
     const result = await queryDb<ResultSetHeader>(
-        "UPDATE users SET hashed_password = ? WHERE id = ?",
+        "UPDATE users SET password_hash = ? WHERE id = ?",
         [newHashedPassword, userId]
     );
 

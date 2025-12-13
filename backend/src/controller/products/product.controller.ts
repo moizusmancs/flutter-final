@@ -49,7 +49,16 @@ export const handleGetAllProducts = AsyncCall(async (req, res, next) => {
         LIMIT ? OFFSET ?
     `;
 
-    const products = await queryDb<Product[]>(query, [...values, limitNum, offset]);
+    const products = await queryDb<any[]>(query, [...values, limitNum, offset]);
+
+    // Fetch images for each product
+    for (const product of products) {
+        const media = await queryDb<{ url: string }[]>(
+            "SELECT url FROM product_media WHERE product_id = ? ORDER BY is_primary DESC, id ASC",
+            [product.id]
+        );
+        product.images = media.map(m => m.url);
+    }
 
     res.status(200).json({
         success: true,
@@ -68,7 +77,7 @@ export const handleGetAllProducts = AsyncCall(async (req, res, next) => {
 export const handleGetOneProduct = AsyncCall(async (req, res, next) => {
     const { id } = req.params;
 
-    const products = await queryDb<Product[]>(
+    const products = await queryDb<any[]>(
         `SELECT p.*, c.name as category_name
          FROM products p
          LEFT JOIN categories c ON p.category_id = c.id
@@ -80,10 +89,19 @@ export const handleGetOneProduct = AsyncCall(async (req, res, next) => {
         return next(new CustomError("Product not found", 404));
     }
 
+    const product = products[0];
+
+    // Fetch images
+    const media = await queryDb<{ url: string }[]>(
+        "SELECT url FROM product_media WHERE product_id = ? ORDER BY is_primary DESC, id ASC",
+        [id]
+    );
+    product.images = media.map(m => m.url);
+
     res.status(200).json({
         success: true,
         message: "Product fetched successfully",
-        product: products[0]
+        product
     });
 });
 
@@ -158,7 +176,16 @@ export const handleSearchProducts = AsyncCall(async (req, res, next) => {
         LIMIT ? OFFSET ?
     `;
 
-    const products = await queryDb<Product[]>(query, [...values, limitNum, offset]);
+    const products = await queryDb<any[]>(query, [...values, limitNum, offset]);
+
+    // Fetch images for each product
+    for (const product of products) {
+        const media = await queryDb<{ url: string }[]>(
+            "SELECT url FROM product_media WHERE product_id = ? ORDER BY is_primary DESC, id ASC",
+            [product.id]
+        );
+        product.images = media.map(m => m.url);
+    }
 
     res.status(200).json({
         success: true,
@@ -181,7 +208,16 @@ export const handleGetProductsByCategory = AsyncCall(async (req, res, next) => {
     const pageNum = Number(page) || 1;
     const limitNum = Number(limit) || 10;
     const offset = (pageNum - 1) * limitNum;
-    const orderBy = sort === "asc" ? "ASC" : "DESC";
+
+    // Handle different sort options
+    let orderByClause = "p.created_at DESC"; // default: latest
+    if (sort === "asc") {
+        orderByClause = "p.created_at ASC";
+    } else if (sort === "price_asc") {
+        orderByClause = "p.price ASC";
+    } else if (sort === "price_desc") {
+        orderByClause = "p.price DESC";
+    }
 
     // Check if category exists
     const categories = await queryDb<{ id: number }[]>(
@@ -193,23 +229,42 @@ export const handleGetProductsByCategory = AsyncCall(async (req, res, next) => {
         return next(new CustomError("Category not found", 404));
     }
 
+    // Get all subcategory IDs (including the category itself)
+    const subcategories = await queryDb<{ id: number }[]>(
+        "SELECT id FROM categories WHERE id = ? OR parent_id = ?",
+        [id, id]
+    );
+    const categoryIds = subcategories.map(c => c.id);
+
+    // Build WHERE clause for multiple categories
+    const placeholders = categoryIds.map(() => '?').join(',');
+
     // Get total count
     const countResult = await queryDb<{ total: number }[]>(
-        "SELECT COUNT(*) as total FROM products WHERE category_id = ?",
-        [id]
+        `SELECT COUNT(*) as total FROM products WHERE category_id IN (${placeholders})`,
+        categoryIds
     );
     const total = countResult[0].total;
 
     // Get products
-    const products = await queryDb<Product[]>(
+    const products = await queryDb<any[]>(
         `SELECT p.*, c.name as category_name
          FROM products p
          LEFT JOIN categories c ON p.category_id = c.id
-         WHERE p.category_id = ?
-         ORDER BY p.created_at ${orderBy}
+         WHERE p.category_id IN (${placeholders})
+         ORDER BY ${orderByClause}
          LIMIT ? OFFSET ?`,
-        [id, limitNum, offset]
+        [...categoryIds, limitNum, offset]
     );
+
+    // Fetch images for each product
+    for (const product of products) {
+        const media = await queryDb<{ url: string }[]>(
+            "SELECT url FROM product_media WHERE product_id = ? ORDER BY is_primary DESC, id ASC",
+            [product.id]
+        );
+        product.images = media.map(m => m.url);
+    }
 
     res.status(200).json({
         success: true,

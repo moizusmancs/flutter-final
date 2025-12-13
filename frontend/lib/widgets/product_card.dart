@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/models/product_model.dart';
+import 'package:frontend/data/models/product_model.dart';
 import 'package:frontend/screens/home/product_detail_screen.dart';
 
 class ProductCard extends StatelessWidget{
