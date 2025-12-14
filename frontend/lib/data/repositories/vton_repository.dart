@@ -15,7 +15,7 @@ class VtonRepository {
   Future<ApiResult<VtonUploadUrls>> getUploadUrl(String fileName) async {
     try {
       final response = await _dioClient.dio.get(
-        '${ApiConstants.baseUrl}${ApiConstants.vtonUploadUrl}',
+        ApiConstants.vtonUploadUrl,
         queryParameters: {'fileName': fileName},
       );
 
@@ -68,7 +68,7 @@ class VtonRepository {
       String imageUrl, String s3Key) async {
     try {
       final response = await _dioClient.dio.post(
-        '${ApiConstants.baseUrl}${ApiConstants.vtonSaveUserImage}',
+        ApiConstants.vtonSaveUserImage,
         data: {
           'imageUrl': imageUrl,
           's3Key': s3Key,
@@ -97,7 +97,7 @@ class VtonRepository {
   Future<ApiResult<List<UserImage>>> getUserImages() async {
     try {
       final response = await _dioClient.dio.get(
-        '${ApiConstants.baseUrl}${ApiConstants.vtonUserImages}',
+        ApiConstants.vtonUserImages,
       );
 
       if (response.data['success'] == true) {
@@ -127,12 +127,15 @@ class VtonRepository {
   }) async {
     try {
       final response = await _dioClient.dio.post(
-        '${ApiConstants.baseUrl}${ApiConstants.vtonGenerate}',
+        ApiConstants.vtonGenerate,
         data: {
           'userImageId': userImageId,
           'productId': productId,
           'segmentationType': segmentationType,
         },
+        options: Options(
+          receiveTimeout: const Duration(minutes: 5), // VTON generation can take time
+        ),
       );
 
       if (response.data['success'] == true) {
@@ -157,7 +160,7 @@ class VtonRepository {
   Future<ApiResult<Map<String, dynamic>>> getVtonStatus(int vtonId) async {
     try {
       final response = await _dioClient.dio.get(
-        '${ApiConstants.baseUrl}${ApiConstants.vtonStatus}/$vtonId',
+        '${ApiConstants.vtonStatus}/$vtonId',
       );
 
       if (response.data['success'] == true) {
@@ -182,7 +185,7 @@ class VtonRepository {
   Future<ApiResult<List<VtonGeneration>>> getVtonHistory() async {
     try {
       final response = await _dioClient.dio.get(
-        '${ApiConstants.baseUrl}${ApiConstants.vtonHistory}',
+        ApiConstants.vtonHistory,
       );
 
       if (response.data['success'] == true) {
@@ -208,7 +211,7 @@ class VtonRepository {
   Future<ApiResult<void>> deleteUserImage(int imageId) async {
     try {
       final response = await _dioClient.dio.delete(
-        '${ApiConstants.baseUrl}${ApiConstants.vtonDeleteUserImage}/$imageId',
+        '${ApiConstants.vtonDeleteUserImage}/$imageId',
       );
 
       if (response.data['success'] == true) {
