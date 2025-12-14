@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:frontend/core/network/dio_client.dart';
 import 'package:frontend/core/theme/app_theme.dart';
+import 'package:frontend/core/constants/api_constants.dart';
 import 'package:frontend/data/repositories/auth_repository.dart';
 import 'package:frontend/data/repositories/profile_repository.dart';
 import 'package:frontend/providers/auth_provider.dart';
@@ -10,6 +12,11 @@ import 'package:frontend/screens/home/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Stripe
+  Stripe.publishableKey = ApiConstants.stripePublishableKey;
+  Stripe.merchantIdentifier = 'merchant.com.vougear.app';
+  await Stripe.instance.applySettings();
 
   // Initialize Dio client
   final dioClient = DioClient();

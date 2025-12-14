@@ -7,6 +7,8 @@ import 'package:frontend/data/repositories/cart_repository.dart';
 import 'package:frontend/data/repositories/wishlist_repository.dart';
 import 'package:frontend/core/theme/app_colors.dart';
 import 'package:frontend/providers/auth_provider.dart';
+import 'package:frontend/screens/vton/vton_onboarding_screen.dart';
+import 'package:frontend/screens/checkout/checkout_screen.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final int productId;
@@ -228,13 +230,46 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
   }
 
-  void _buyNow() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Buy now functionality coming soon!'),
-        backgroundColor: AppColors.info,
-      ),
+  void _buyNow() async {
+    if (selectedVariant == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please select size'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    // Add to cart first
+    final result = await _cartRepository.addToCart(
+      variantId: selectedVariant!.id,
+      quantity: quantity,
     );
+
+    if (!mounted) return;
+
+    if (result.success) {
+      // Small delay to ensure cart is updated on backend
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      if (!mounted) return;
+
+      // Navigate to checkout
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const CheckoutScreen(),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.error ?? 'Failed to add to cart'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
   }
 
   void _incrementQuantity() {
@@ -373,6 +408,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.textPrimary,
                                   ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(height: 4),
                                 if (product!.categoryName != null)
@@ -382,6 +419,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                       color: AppColors.textLight,
                                       fontSize: 14,
                                     ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                               ],
                             ),
@@ -558,11 +597,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         width: double.infinity,
                         child: ElevatedButton(
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content:
-                                    const Text('Virtual Try-On coming soon!'),
-                                backgroundColor: AppColors.info,
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => VtonOnboardingScreen(
+                                  productId: widget.productId,
+                                ),
                               ),
                             );
                           },

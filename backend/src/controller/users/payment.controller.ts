@@ -6,10 +6,13 @@ import { Order } from "../../types/order.js";
 import { ResultSetHeader } from "mysql2";
 import Stripe from "stripe";
 
-// Initialize Stripe (will use environment variable)
-const stripe = process.env.STRIPE_SECRET_KEY
-    ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2025-11-17.clover" })
-    : null;
+// Lazy initialization of Stripe
+function getStripe() {
+    if (!process.env.STRIPE_SECRET_KEY) {
+        return null;
+    }
+    return new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2025-11-17.clover" });
+}
 
 // POST /payments/initiate - Initiate payment
 export const handleInitiatePayment = AsyncCall(async (req, res, next) => {
@@ -74,6 +77,7 @@ export const handleInitiatePayment = AsyncCall(async (req, res, next) => {
 
     // For card payments, use Stripe
     if (payment_method === 'card') {
+        const stripe = getStripe();
         if (!stripe) {
             return next(new CustomError("Payment processing is not configured. Please add STRIPE_SECRET_KEY to environment variables.", 503));
         }
@@ -176,6 +180,7 @@ export const handleVerifyPayment = AsyncCall(async (req, res, next) => {
         return next(new CustomError("Order not found", 404));
     }
 
+    const stripe = getStripe();
     if (!stripe) {
         return next(new CustomError("Payment processing is not configured. Please add STRIPE_SECRET_KEY to environment variables.", 503));
     }

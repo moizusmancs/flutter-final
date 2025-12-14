@@ -41,10 +41,10 @@ class Order {
   factory Order.fromJson(Map<String, dynamic> json) {
     return Order(
       id: json['id'] as int,
-      userId: json['user_id'] as int,
+      userId: (json['user_id'] as int?) ?? 0,
       totalAmount: _parseDouble(json['total_amount']),
       status: json['status'] as String,
-      createdAt: json['created_at'] as String,
+      createdAt: (json['created_at'] as String?) ?? DateTime.now().toIso8601String(),
       line1: json['line1'] as String?,
       city: json['city'] as String?,
       state: json['state'] as String?,

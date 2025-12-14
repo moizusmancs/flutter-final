@@ -388,18 +388,29 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(height: 16),
 
                             // Category Section
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: categories.map((category) {
-                                return CircularCategoryItem(
-                                  label: category['label'],
-                                  icon: category['icon'],
-                                  isSelected: false, // Never show selected state
-                                  onTap: () {
-                                    _onCategoryTap(category['label'], category['categoryId']);
-                                  },
-                                );
-                              }).toList(),
+                            SizedBox(
+                              height: 105,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: categories.length,
+                                itemBuilder: (context, index) {
+                                  final category = categories[index];
+                                  return Padding(
+                                    padding: EdgeInsets.only(
+                                      left: index == 0 ? 0 : 8,
+                                      right: index == categories.length - 1 ? 0 : 8,
+                                    ),
+                                    child: CircularCategoryItem(
+                                      label: category['label'],
+                                      icon: category['icon'],
+                                      isSelected: false,
+                                      onTap: () {
+                                        _onCategoryTap(category['label'], category['categoryId']);
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
                           ],
                         ),

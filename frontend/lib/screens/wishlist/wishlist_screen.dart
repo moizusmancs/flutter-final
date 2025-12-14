@@ -199,7 +199,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                   padding: const EdgeInsets.all(16.0),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    childAspectRatio: 0.68,
+                    childAspectRatio: 0.62,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
                   ),
@@ -392,7 +392,7 @@ class _WishlistItemCard extends StatelessWidget {
           // Product Details
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(10.0),
+              padding: const EdgeInsets.all(8.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -400,17 +400,19 @@ class _WishlistItemCard extends StatelessWidget {
                   Text(
                     item.productName,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
 
                   // Variant Info
-                  Row(
+                  Wrap(
+                    spacing: 4,
+                    runSpacing: 4,
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -430,7 +432,6 @@ class _WishlistItemCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 4),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 6,
@@ -447,6 +448,8 @@ class _WishlistItemCard extends StatelessWidget {
                             color: AppColors.buttonPrimary,
                             fontWeight: FontWeight.w500,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
@@ -458,7 +461,7 @@ class _WishlistItemCard extends StatelessWidget {
                     Text(
                       '\$${(item.productPrice + item.additionalPrice).toStringAsFixed(2)}',
                       style: TextStyle(
-                        fontSize: 11,
+                        fontSize: 10,
                         color: AppColors.textLight,
                         decoration: TextDecoration.lineThrough,
                       ),
@@ -466,17 +469,17 @@ class _WishlistItemCard extends StatelessWidget {
                   Text(
                     '\$${item.finalPrice.toStringAsFixed(2)}',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 14,
                       fontWeight: FontWeight.bold,
                       color: AppColors.buttonPrimary,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
 
                   // Add to Cart Button
                   SizedBox(
                     width: double.infinity,
-                    height: 32,
+                    height: 28,
                     child: ElevatedButton(
                       onPressed: item.isInStock ? onAddToCart : null,
                       style: ElevatedButton.styleFrom(

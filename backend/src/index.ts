@@ -10,6 +10,7 @@ import userCartRoutes from './routes/users/cart.routes.js';
 import userOrderRoutes from './routes/users/order.routes.js';
 import userPaymentRoutes from './routes/users/payment.routes.js';
 import userCouponRoutes from './routes/users/coupon.routes.js';
+import userVtonRoutes from './routes/users/vton.routes.js';
 import productRoutes from './routes/products/product.routes.js';
 import categoryRoutes from './routes/categories/category.routes.js';
 import adminAuthRoutes from './routes/admin/auth.routes.js';
@@ -50,6 +51,7 @@ app.use("/api/v1/users/cart", userCartRoutes);
 app.use("/api/v1/users/orders", userOrderRoutes);
 app.use("/api/v1/users/payments", userPaymentRoutes);
 app.use("/api/v1/users/coupons", userCouponRoutes);
+app.use("/api/v1/users/vton", userVtonRoutes);
 
 // Public routes
 app.use("/api/v1/products", productRoutes);
@@ -72,6 +74,6 @@ app.get("/test",(req:Request, res:Response, next: NextFunction) => {
 
 app.use(globalErrorHandlerMiddleware)
 
-app.listen(PORT, () => {
+app.listen(4000, "0.0.0.0", () => {
   console.log(`Server running on http://localhost:${PORT}`);
-});
+},);

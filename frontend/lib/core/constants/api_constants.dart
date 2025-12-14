@@ -1,6 +1,11 @@
 class ApiConstants {
   // Base URL - change to your production URL in production
   static const String baseUrl = 'http://localhost:4000/api/v1';
+  // static const String baseUrl = 'http://192.168.18.24:4000/api/v1';
+
+  // Stripe Configuration
+  // Get your publishable key from: https://dashboard.stripe.com/test/apikeys
+  static const String stripePublishableKey = 'pk_test_51RMPIBE3ebK9kAcMikNb9KFT2hcBEQJZAXbkRM0aQ84pH79gouYwexJ1PCMbblu2AENS6QWVLJjdtMvwbykBFEyT00ETjbwAxQ';
 
   // Auth endpoints
   static const String signup = '/users/auth/signup';
@@ -33,9 +38,18 @@ class ApiConstants {
   static const String addresses = '/users/addresses';
 
   // Payment endpoints
-  static const String createPaymentIntent = '/users/payments/create-payment-intent';
-  static const String confirmPayment = '/users/payments/confirm';
+  static const String createPaymentIntent = '/users/payments/initiate';
+  static const String confirmPayment = '/users/payments/verify';
 
   // Coupon endpoints
   static const String validateCoupon = '/users/coupons/validate';
+
+  // Virtual Try-On endpoints
+  static const String vtonUploadUrl = '/users/vton/upload-url';
+  static const String vtonSaveUserImage = '/users/vton/save-user-image';
+  static const String vtonUserImages = '/users/vton/user-images';
+  static const String vtonGenerate = '/users/vton/generate';
+  static const String vtonStatus = '/users/vton/status';
+  static const String vtonHistory = '/users/vton/history';
+  static const String vtonDeleteUserImage = '/users/vton/user-image';
 }

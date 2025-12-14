@@ -18,17 +18,30 @@ class CustomButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final buttonColor = color ??
-        (isSecondary ? AppColors.buttonSecondary : AppColors.buttonPrimary);
+        (isSecondary ? AppColors.buttonSecondary : AppColors.white);
+    final textColor = isSecondary ? AppColors.white : AppColors.textPrimary;
 
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
           backgroundColor: buttonColor,
-          foregroundColor: AppColors.white,
+          foregroundColor: textColor,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          elevation: 2,
         ),
         onPressed: onPressed,
-        child: Text(text),
+        child: Text(
+          text,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: textColor,
+          ),
+        ),
       ),
     );
   }

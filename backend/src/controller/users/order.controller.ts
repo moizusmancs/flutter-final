@@ -123,10 +123,10 @@ export const handleCreateOrder = AsyncCall(async (req, res, next) => {
             c.variant_id,
             c.quantity,
             pv.stock,
-            pv.additional_price,
+            COALESCE(pv.additional_price, 0) as additional_price,
             p.price as product_price,
-            p.discount as product_discount,
-            ((p.price + pv.additional_price) * c.quantity * (1 - p.discount/100)) as item_total
+            COALESCE(p.discount, 0) as product_discount,
+            ((p.price + COALESCE(pv.additional_price, 0)) * c.quantity * (1 - COALESCE(p.discount, 0)/100)) as item_total
         FROM cart c
         JOIN product_variants pv ON c.variant_id = pv.id
         JOIN products p ON pv.product_id = p.id
@@ -145,7 +145,15 @@ export const handleCreateOrder = AsyncCall(async (req, res, next) => {
     }
 
     // Calculate total amount
-    const totalAmount = cartItems.reduce((sum, item) => sum + (item.item_total || 0), 0);
+    const totalAmount = cartItems.reduce((sum, item) => {
+        const itemTotal = Number(item.item_total) || 0;
+        return sum + itemTotal;
+    }, 0);
+
+    // Validate total amount is a valid number
+    if (isNaN(totalAmount) || !isFinite(totalAmount)) {
+        return next(new CustomError("Invalid total amount calculated", 500));
+    }
 
     // Create order
     const orderResult = await queryDb<ResultSetHeader>(
@@ -161,8 +169,16 @@ export const handleCreateOrder = AsyncCall(async (req, res, next) => {
 
     // Create order items and reduce stock
     for (const item of cartItems) {
-        const priceAtPurchase = ((item.product_price || 0) + (item.additional_price || 0)) *
-                                (1 - (item.product_discount || 0) / 100);
+        const productPrice = Number(item.product_price) || 0;
+        const additionalPrice = Number(item.additional_price) || 0;
+        const discount = Number(item.product_discount) || 0;
+
+        const priceAtPurchase = (productPrice + additionalPrice) * (1 - discount / 100);
+
+        // Validate price
+        if (isNaN(priceAtPurchase) || !isFinite(priceAtPurchase)) {
+            return next(new CustomError("Invalid price calculation", 500));
+        }
 
         // Insert order item
         await queryDb(

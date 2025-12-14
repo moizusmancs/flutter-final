@@ -4,6 +4,7 @@ import 'package:frontend/data/models/cart_item_model.dart';
 import 'package:frontend/data/repositories/cart_repository.dart';
 import 'package:frontend/core/theme/app_colors.dart';
 import 'package:frontend/providers/auth_provider.dart';
+import 'package:frontend/screens/checkout/checkout_screen.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -156,11 +157,20 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   void _checkout() {
-    // TODO: Implement checkout flow
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Checkout functionality coming soon!'),
-        backgroundColor: AppColors.info,
+    if (cartItems.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Your cart is empty'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CheckoutScreen(),
       ),
     );
   }
@@ -495,7 +505,9 @@ class _CartItemCard extends StatelessWidget {
                 const SizedBox(height: 4),
 
                 // Variant Info
-                Row(
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -515,7 +527,6 @@ class _CartItemCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
@@ -532,6 +543,8 @@ class _CartItemCard extends StatelessWidget {
                           color: AppColors.buttonPrimary,
                           fontWeight: FontWeight.w500,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -543,31 +556,40 @@ class _CartItemCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     // Price
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (item.hasDiscount)
-                          Text(
-                            '\$${item.productPrice.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textLight,
-                              decoration: TextDecoration.lineThrough,
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (item.hasDiscount)
+                            Text(
+                              '\$${item.productPrice.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textLight,
+                                decoration: TextDecoration.lineThrough,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
+                          Text(
+                            '\$${item.finalPrice.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.success,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        Text(
-                          '\$${item.finalPrice.toStringAsFixed(2)}',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.success,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+
+                    const SizedBox(width: 8),
 
                     // Quantity Controls
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         _QuantityButton(
                           icon: Icons.remove,
@@ -575,12 +597,12 @@ class _CartItemCard extends StatelessWidget {
                               onQuantityChanged(item.quantity - 1),
                         ),
                         Container(
-                          width: 40,
+                          width: 35,
                           alignment: Alignment.center,
                           child: Text(
                             '${item.quantity}',
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: AppColors.textPrimary,
                             ),
